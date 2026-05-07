@@ -23,7 +23,11 @@ services:
 
   garage:
     image: dxflrs/garage:${GARAGE_VERSION}
-    command: ["/garage", "-c", "/etc/garage.toml", "server"]
+    environment:
+      GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_DEFAULT_ACCESS_KEY}
+      GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_DEFAULT_SECRET_KEY}
+      GARAGE_DEFAULT_BUCKET: ${GARAGE_DEFAULT_BUCKET}
+    command: ["/garage", "-c", "/etc/garage.toml", "server", "--single-node", "--default-bucket"]
     ports:
       - "${GARAGE_S3_PORT}:3900"
       - "${GARAGE_WEB_PORT}:3902"
