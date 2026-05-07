@@ -8,12 +8,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      - postgres_data:/var/lib/postgresql
 
   rabbitmq:
     image: rabbitmq:${RABBITMQ_VERSION}
@@ -28,14 +23,15 @@ services:
 
   garage:
     image: dxflrs/garage:${GARAGE_VERSION}
-    command: ["server"]
+    command: ["/garage", "-c", "/etc/garage.toml", "server"]
     ports:
       - "${GARAGE_S3_PORT}:3900"
+      - "${GARAGE_WEB_PORT}:3902"
       - "${GARAGE_ADMIN_PORT}:3903"
     volumes:
       - garage_meta:/var/lib/garage/meta
       - garage_data:/var/lib/garage/data
-      - ./garage.toml:/etc/garage.toml:ro
+      - ./garage.generated.toml:/etc/garage.toml:ro
 
   keycloak:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
