@@ -8,7 +8,11 @@ Local infrastructure startup via Docker Compose:
 
 ## Configure
 
-Fill in `.env` (versions, ports, usernames/passwords, tokens).
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` (ports, usernames/passwords, tokens).
 
 ## Up
 
