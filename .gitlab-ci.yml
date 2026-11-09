@@ -1,0 +1,5 @@
+test:
+  image: alpine:3.20
+  script:
+    - echo "runner works"
+    - uname -a
