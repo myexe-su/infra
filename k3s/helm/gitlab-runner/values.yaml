@@ -1,0 +1,14 @@
+gitlabUrl: https://git.home/
+
+certsSecretName: gitlab-runner-certs
+
+rbac:
+  create: true
+
+runners:
+  secret: gitlab-runner-secret
+  config: |
+    [[runners]]
+      [runners.kubernetes]
+        namespace = "{{ .Release.Namespace }}"
+        image = "alpine"

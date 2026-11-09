@@ -106,7 +106,7 @@ prometheus:
   install: false
 
 gitlab-runner:
-  certsSecretName: gitlab-runner-certs
+  install: false
 
 gitlab-gateway-api:
   install: false

@@ -223,15 +223,7 @@ kubectl apply -f helm/gitlab/certificate.yaml
 kubectl get certificate -n gitlab   # wait for gitlab-tls READY True
 ```
 
-Create secret with the CA that signed it, for Runner (file name must be `<hostname>.crt`; it must exist before the Runner pod starts):
-
-```bash
-kubectl create secret generic gitlab-runner-certs \
-  --namespace gitlab \
-  --from-literal=git.home.crt="$(kubectl get secret gitlab-tls -n gitlab -o jsonpath='{.data.ca\.crt}' | base64 -d)"
-```
-
-Install GitLab:
+Install GitLab (the bundled Runner is disabled, it is installed separately below):
 
 ```bash
 helm repo add gitlab https://charts.gitlab.io
@@ -259,3 +251,32 @@ Admin settings (stored in the database, set once in the UI under Admin → Setti
 - Metrics and profiling: disable "Enable GitLab Prometheus metrics endpoint" (otherwise a Sidekiq sampler polls Redis constantly), then `kubectl rollout restart deployment/gitlab-sidekiq-all-in-1-v2 -n gitlab`.
 - Usage statistics and event tracking: disable version check, Service Ping, event tracking.
 - Web IDE: disable single origin fallback.
+## GitLab Runner
+
+Installed as a separate release in `gitlab-runners`; job pods run in the same namespace.
+
+1. Create the Runner in the UI: Admin → CI/CD → Runners → New instance runner (tags optional, "run untagged jobs" on). Copy the token (`glrt-...`).
+
+2. Create the namespace and secrets:
+
+```bash
+kubectl create namespace gitlab-runners
+
+kubectl create secret generic gitlab-runner-secret \
+  --namespace gitlab-runners \
+  --from-literal=runner-token='glrt-...' \
+  --from-literal=runner-registration-token=''
+
+# CA that signed gitlab-tls; file name must be <hostname>.crt
+kubectl create secret generic gitlab-runner-certs \
+  --namespace gitlab-runners \
+  --from-literal=git.home.crt="$(kubectl get secret gitlab-tls -n gitlab -o jsonpath='{.data.ca\.crt}' | base64 -d)"
+```
+
+3. Install:
+
+```bash
+helm install gitlab-runner gitlab/gitlab-runner \
+  --namespace gitlab-runners \
+  --values helm/gitlab-runner/values.yaml
+```
