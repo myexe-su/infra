@@ -22,7 +22,14 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
 
   garage:
-    image: dxflrs/garage:${GARAGE_VERSION}
+    build:
+      context: ./garage
+      args:
+        GARAGE_VERSION: ${GARAGE_VERSION}
+        GARAGE_WEB_ROOT_DOMAIN: ${GARAGE_WEB_ROOT_DOMAIN}
+        GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN}
+        GARAGE_METRICS_TOKEN: ${GARAGE_METRICS_TOKEN}
+    image: infra-garage:${GARAGE_VERSION}
     environment:
       GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_DEFAULT_ACCESS_KEY}
       GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_DEFAULT_SECRET_KEY}
@@ -35,7 +42,34 @@ services:
     volumes:
       - garage_meta:/var/lib/garage/meta
       - garage_data:/var/lib/garage/data
-      - ./garage.generated.toml:/etc/garage.toml:ro
+
+  vault:
+    image: hashicorp/vault:${VAULT_VERSION}
+    command: server -dev
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports:
+      - "${VAULT_PORT}:8200"
+    cap_add:
+      - IPC_LOCK
+
+  redis:
+    image: redis:${REDIS_VERSION}
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+
+  mongodb:
+    image: mongo:${MONGODB_VERSION}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+    ports:
+      - "${MONGODB_PORT}:27017"
+    volumes:
+      - mongodb_data:/data/db
 
   keycloak:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
@@ -56,3 +90,5 @@ volumes:
   rabbitmq_data:
   garage_meta:
   garage_data:
+  redis_data:
+  mongodb_data:

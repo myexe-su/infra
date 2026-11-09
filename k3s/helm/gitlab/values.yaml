@@ -1,0 +1,112 @@
+global:
+  hosts:
+    domain: s1.home
+    gitlab:
+      name: git.home
+  shell:
+    port: 2222
+  ingress:
+    enabled: true
+    configureCertmanager: false
+    class: traefik
+    provider: traefik
+    tls:
+      secretName: gitlab-tls
+  certmanager:
+    install: false
+  gatewayApi:
+    enabled: false
+    installEnvoy: false
+  postgresql:
+    install: false
+  psql:
+    host: postgres-rw.common.svc.cluster.local
+    port: 5432
+    database: gitlabhq_production
+    username: gitlab
+    password:
+      secret: gitlab-postgresql-secret
+      key: postgresql-password
+  redis:
+    install: false
+    host: redis-master.common.svc.cluster.local
+    port: 6379
+    auth:
+      enabled: false
+  appConfig:
+    object_store:
+      enabled: true
+      proxy_download: true
+      connection:
+        secret: gitlab-s3-secret
+        key: connection
+    artifacts:
+      bucket: gitlab-artifacts
+    lfs:
+      bucket: gitlab-lfs
+    uploads:
+      bucket: gitlab-uploads
+    packages:
+      bucket: gitlab-packages
+  registry:
+    bucket: gitlab-registry
+
+gitlab:
+  webservice:
+    replicaCount: 1
+    workerProcesses: 1
+    workerThreads: 2
+    hpa:
+      minReplicas: 1
+  sidekiq:
+    replicaCount: 1
+    concurrency: 2
+    minReplicas: 1
+    maxReplicas: 1
+    extraEnv:
+      GITLAB_CRON_JOBS_POLL_INTERVAL: "30"
+  gitaly:
+    replicaCount: 1
+  gitlab-shell:
+    replicaCount: 1
+    minReplicas: 1
+    service:
+      type: LoadBalancer
+  kas:
+    replicaCount: 1
+    minReplicas: 1
+
+registry:
+  replicaCount: 1
+  hpa:
+    minReplicas: 1
+  storage:
+    secret: gitlab-registry-s3-secret
+    key: config
+
+certmanager-issuer:
+  email: app@myexe.net
+
+installCertmanager: false
+
+certmanager:
+  installCRDs: false
+  nameOverride: certmanager
+
+nginx-ingress:
+  enabled: false
+
+postgresql:
+  install: false
+
+redis:
+  install: false
+
+prometheus:
+  install: false
+
+gitlab-runner:
+  certsSecretName: gitlab-runner-certs
+
+gitlab-gateway-api:
+  install: false

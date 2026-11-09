@@ -5,32 +5,24 @@ set -a
 . ./.env
 set +a
 
-envsubst < docker/garage.toml > docker/garage.generated.toml
-trap 'rm -f docker/garage.generated.toml' EXIT
+cp docker/garage/garage.toml docker/garage/garage.generated.toml
+sed -i '' "s|^root_domain = .*|root_domain = \"$GARAGE_WEB_ROOT_DOMAIN\"|" docker/garage/garage.generated.toml
+sed -i '' "s|^metrics_token = .*|metrics_token = \"$GARAGE_METRICS_TOKEN\"|" docker/garage/garage.generated.toml
+sed -i '' "s|^admin_token = .*|admin_token = \"$GARAGE_ADMIN_TOKEN\"|" docker/garage/garage.generated.toml
+trap 'rm -f docker/garage/garage.generated.toml' EXIT
 
-docker compose -p infra -f docker/docker-compose.yml up -d postgres
+docker compose -p infra -f docker/docker-compose.yml --env-file .env build garage
+docker compose -p infra -f docker/docker-compose.yml --env-file .env up -d
 
-# Wait until postgres is ready (max 10 attempts)
 attempt=1
 max_attempts=10
-until docker compose -p infra -f docker/docker-compose.yml exec -T postgres pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; do
-  echo "Waiting for postgres to become ready... attempt ${attempt}/${max_attempts}"
+until docker compose -p infra -f docker/docker-compose.yml --env-file .env exec -T vault sh -c 'VAULT_ADDR=http://127.0.0.1:8200 vault status' >/dev/null 2>&1; do
+  echo "Waiting for vault to become ready... attempt ${attempt}/${max_attempts}"
   if [ "$attempt" -ge "$max_attempts" ]; then
-    echo "Postgres did not become ready after ${max_attempts} attempts" >&2
-    docker compose -p infra -f docker/docker-compose.yml logs postgres --tail=100 >&2 || true
+    echo "Vault did not become ready after ${max_attempts} attempts" >&2
+    docker compose -p infra -f docker/docker-compose.yml --env-file .env logs vault --tail=100 >&2 || true
     exit 1
   fi
   attempt=$((attempt + 1))
   sleep 1
 done
-
-docker compose -p infra -f docker/docker-compose.yml up -d rabbitmq
-docker compose -p infra -f docker/docker-compose.yml up -d garage
-
-# Initialize Keycloak DB/user
-docker compose -p infra -f docker/docker-compose.yml exec -T postgres psql -U "$POSTGRES_USER" -d postgres <<SQL
-CREATE USER "$KEYCLOAK_DB_USER" WITH ENCRYPTED PASSWORD '$KEYCLOAK_DB_PASSWORD';
-CREATE DATABASE "$KEYCLOAK_DB" OWNER "$KEYCLOAK_DB_USER";
-SQL
-
-docker compose -p infra -f docker/docker-compose.yml up -d keycloak

@@ -1,0 +1,13 @@
+master:
+  replicaCount: 1
+
+volume:
+  replicaCount: 1
+
+filer:
+  replicaCount: 1
+
+s3:
+  enabled: true
+  enableAuth: true
+  existingConfigSecret: seaweedfs-s3-secret

@@ -13,9 +13,9 @@ api_bind_addr = "0.0.0.0:3900"
 
 [s3_web]
 bind_addr = "0.0.0.0:3902"
-root_domain = "${GARAGE_WEB_ROOT_DOMAIN}"
+root_domain = "localhost"
 
 [admin]
 api_bind_addr = "0.0.0.0:3903"
-metrics_token = "${GARAGE_METRICS_TOKEN}"
-admin_token = "${GARAGE_ADMIN_TOKEN}"
+metrics_token = "change-me-metrics-token"
+admin_token = "change-me-admin-token"
