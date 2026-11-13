@@ -1,0 +1,19 @@
+# Argo CD Core: headless, without API server, UI, Dex and notifications
+server:
+  enabled: false
+
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+# Use the shared Redis (cache only) instead of the bundled one
+redis:
+  enabled: false
+
+redisSecretInit:
+  enabled: false
+
+externalRedis:
+  host: redis-master.common.svc.cluster.local

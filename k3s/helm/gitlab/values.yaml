@@ -1,4 +1,5 @@
 global:
+  edition: ce
   hosts:
     domain: s1.home
     gitlab:
@@ -58,6 +59,7 @@ gitlab:
     workerThreads: 2
     hpa:
       minReplicas: 1
+      maxReplicas: 1
   sidekiq:
     replicaCount: 1
     concurrency: 2
@@ -70,16 +72,19 @@ gitlab:
   gitlab-shell:
     replicaCount: 1
     minReplicas: 1
+    maxReplicas: 1
     service:
       type: LoadBalancer
   kas:
     replicaCount: 1
     minReplicas: 1
+    maxReplicas: 1
 
 registry:
   replicaCount: 1
   hpa:
     minReplicas: 1
+    maxReplicas: 1
   storage:
     secret: gitlab-registry-s3-secret
     key: config

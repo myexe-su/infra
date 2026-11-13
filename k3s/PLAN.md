@@ -10,7 +10,7 @@
 | 6 | Redis | k3s (Helm) | common |
 | 7 | SeaweedFS (S3) | k3s (Helm) | common |
 | 8 | GitLab CE | k3s (Helm) | gitlab |
-| 9 | Argo CD | k3s (Helm) | common |
+| 9 | Argo CD | k3s (Helm) | argocd |
 | 10 | GitLab Runner | k3s (Helm) | gitlab-runners |
 | 11 | Linkerd | k3s (CLI) | linkerd |
 | 12 | Prometheus + Grafana | k3s (Helm) | monitoring |

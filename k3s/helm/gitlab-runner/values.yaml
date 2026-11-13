@@ -5,6 +5,9 @@ certsSecretName: gitlab-runner-certs
 rbac:
   create: true
 
+serviceAccount:
+  create: true
+
 runners:
   secret: gitlab-runner-secret
   config: |
